@@ -98,15 +98,28 @@ curl -X POST http://localhost:8000/api/generate/image \
 
 ### Генерация видео
 
+**Важно:** Генерация видео запускает локальный скрипт `generate.py` из соседней папки.
+
 ```bash
 curl -X POST http://localhost:8000/api/generate/video \
   -H "Content-Type: application/json" \
   -d '{
-    "prompt": "A cat playing with a ball",
+    "prompt": "Two anthropomorphic cats in comfy boxing gear and bright gloves fight intensely on a spotlighted stage",
     "duration": 5,
-    "fps": 24
+    "fps": 24,
+    "size": "1280*704",
+    "task": "ti2v-5B"
   }'
 ```
+
+Параметры (все опциональны, кроме prompt):
+
+- `prompt` - описание видео (обязательно)
+- `size` - размер видео в формате "width*height" (по умолчанию "1280*704")
+- `task` - задача для генерации (по умолчанию "ti2v-5B")
+- `ckpt_dir` - путь к директории с чекпоинтами (по умолчанию "./Wan2.2-TI2V-5B")
+- `generate_script_path` - путь к скрипту generate.py (по умолчанию "../generate.py")
+- `timeout` - таймаут в секундах (рекомендуется минимум 600)
 
 ### Проверка здоровья сервиса
 
@@ -118,24 +131,61 @@ curl http://localhost:8000/api/health
 
 ### Настройка API WAN2.2
 
-По умолчанию шлюз обращается к `http://127.0.0.1:7860`.
+#### Для генерации текста и изображений
 
-Для изменения адреса можно:
+По умолчанию шлюз обращается к `http://127.0.0.1:8001`.
 
-1. **В коде** (app/services/wan_client.py):
+Для изменения адреса:
 
-```python
-WAN_API_URL = "http://your-server:7860"
+1. **Через переменные окружения**:
+
+```bash
+export WAN_API_URL=http://your-server:7860
 ```
 
 2. **Через параметр запроса**:
 
 ```bash
-curl -X POST http://localhost:8000/api/generate \
+curl -X POST http://localhost:8000/api/generate/text \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "тест",
     "api_url": "http://remote-server:7860"
+  }'
+```
+
+#### Для генерации видео (локальный скрипт)
+
+Настройка через переменные окружения:
+
+```bash
+# Путь к скрипту generate.py (относительно директории проекта)
+export GENERATE_SCRIPT_PATH=../generate.py
+
+# Путь к директории с чекпоинтами
+export CKPT_DIR=./Wan2.2-TI2V-5B
+
+# Размер видео по умолчанию
+export VIDEO_SIZE=1280*704
+
+# Задача по умолчанию
+export TI2V_TASK=ti2v-5B
+
+# Таймаут для генерации видео (в секундах)
+export WAN_TIMEOUT=1800  # 30 минут
+```
+
+Или укажите параметры в запросе:
+
+```bash
+curl -X POST http://localhost:8000/api/generate/video \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Your prompt here",
+    "size": "1280*704",
+    "task": "ti2v-5B",
+    "ckpt_dir": "./Wan2.2-TI2V-5B",
+    "generate_script_path": "../generate.py"
   }'
 ```
 

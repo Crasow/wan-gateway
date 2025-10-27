@@ -30,7 +30,10 @@ class VideoGenerationRequest(BaseModel):
     prompt: str = Field(..., description="Описание видео")
     duration: int = Field(5, ge=1, le=30, description="Длительность в секундах")
     fps: int = Field(24, ge=12, le=60, description="Кадров в секунду")
-    api_url: Optional[str] = None
+    size: Optional[str] = Field(None, description="Размер видео в формате 'width*height' (например, '1280*704')")
+    task: Optional[str] = Field(None, description="Задача для генерации (например, 'ti2v-5B')")
+    ckpt_dir: Optional[str] = Field(None, description="Путь к директории с чекпоинтами")
+    generate_script_path: Optional[str] = Field(None, description="Путь к скрипту generate.py")
     timeout: Optional[int] = None
 
 
@@ -108,18 +111,22 @@ async def generate_image_endpoint(request: ImageGenerationRequest):
 @router.post("/generate/video")
 async def generate_video_endpoint(request: VideoGenerationRequest):
     """
-    Генерирует видео на основе промпта через WAN2.2
+    Генерирует видео на основе промпта через локальный скрипт generate.py
     
     Принимает:
     - prompt: описание видео (обязательно)
     - duration: длительность в секундах (опционально, по умолчанию 5)
     - fps: кадров в секунду (опционально, по умолчанию 24)
-    - api_url: URL API (опционально)
+    - size: размер видео в формате 'width*height' (опционально, по умолчанию '1280*704')
+    - task: задача для генерации (опционально, по умолчанию 'ti2v-5B')
+    - ckpt_dir: путь к директории с чекпоинтами (опционально)
+    - generate_script_path: путь к скрипту generate.py (опционально)
     - timeout: таймаут в секундах (опционально, рекомендуется минимум 600)
     
-    Возвращает URL видео и метрики производительности
+    Возвращает путь к сгенерированному видео и метрики производительности
     
     ⚠️ Внимание: генерация видео может занимать много времени (5-15 минут)
+    Запускает команду: python generate.py --task ti2v-5B --size 1280*704 --ckpt_dir ./Wan2.2-TI2V-5B --offload_model True --convert_model_dtype --t5_cpu --prompt "..."
     """
     if not request.prompt or not request.prompt.strip():
         raise HTTPException(status_code=400, detail="Prompt не может быть пустым")
@@ -131,7 +138,10 @@ async def generate_video_endpoint(request: VideoGenerationRequest):
             prompt=request.prompt,
             duration=request.duration,
             fps=request.fps,
-            api_url=request.api_url,
+            size=request.size,
+            task=request.task,
+            ckpt_dir=request.ckpt_dir,
+            generate_script_path=request.generate_script_path,
             timeout=request.timeout
         )
         
