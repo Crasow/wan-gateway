@@ -1,10 +1,10 @@
-import httpx
-import logging
 import time
-from typing import Optional, Dict, Any
-from app.config import get_wan_api_url, get_timeout
+from typing import Any, Dict, Optional
 
-logger = logging.getLogger(__name__)
+import httpx
+
+from app.config import get_timeout, get_wan_api_url
+from app.logger import logger
 
 
 async def _make_request(

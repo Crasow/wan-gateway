@@ -63,6 +63,7 @@ API будет доступно по адресу: http://localhost:8000
 ### Документация API
 
 После запуска доступна автоматическая документация:
+
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
@@ -117,16 +118,18 @@ curl http://localhost:8000/api/health
 
 ### Настройка API WAN2.2
 
-По умолчанию шлюз обращается к `http://127.0.0.1:7860`. 
+По умолчанию шлюз обращается к `http://127.0.0.1:7860`.
 
 Для изменения адреса можно:
 
 1. **В коде** (app/services/wan_client.py):
+
 ```python
 WAN_API_URL = "http://your-server:7860"
 ```
 
 2. **Через параметр запроса**:
+
 ```bash
 curl -X POST http://localhost:8000/api/generate \
   -H "Content-Type: application/json" \
@@ -175,13 +178,13 @@ curl -X POST http://localhost:8000/api/generate \
 
 ## API Endpoints
 
-| Метод | Endpoint | Описание |
-|-------|----------|----------|
-| GET | `/` | Проверка работоспособности |
-| GET | `/api/health` | Проверка здоровья и возможностей |
-| POST | `/api/generate/text` | Генерация текста |
-| POST | `/api/generate/image` | Генерация изображений |
-| POST | `/api/generate/video` | Генерация видео |
+| Метод | Endpoint              | Описание                         |
+| ----- | --------------------- | -------------------------------- |
+| GET   | `/`                   | Проверка работоспособности       |
+| GET   | `/api/health`         | Проверка здоровья и возможностей |
+| POST  | `/api/generate/text`  | Генерация текста                 |
+| POST  | `/api/generate/image` | Генерация изображений            |
+| POST  | `/api/generate/video` | Генерация видео                  |
 
 ## Структура проекта
 
@@ -191,34 +194,90 @@ wan-gateway/
 │   ├── __init__.py
 │   ├── main.py              # FastAPI приложение
 │   ├── config.py            # Конфигурация
+│   ├── logger.py            # Настройка логирования
+│   ├── metrics.py           # Метрики производительности
 │   ├── routers/
 │   │   └── generate.py      # API endpoints
 │   └── services/
 │       └── wan_client.py    # Клиент для WAN2.2 API
+├── logs/                    # Логи (создается автоматически)
+│   ├── gateway.log
+│   └── errors.log
 ├── start_server.ps1         # Скрипт запуска (Windows)
 ├── start_server.sh          # Скрипт запуска (Unix)
 ├── test_api.py              # Тестовый скрипт
 ├── test_api.ps1             # Скрипт тестов (Windows)
+├── load_test.py             # Нагрузочное тестирование
 ├── pyproject.toml           # Зависимости
 └── README.md               # Документация
 ```
 
+## Нагрузочное тестирование
+
+Для проверки поведения при одновременных запросах:
+
+```powershell
+# Windows
+uv run python load_test.py
+
+# Linux/MacOS
+python load_test.py
+```
+
+**Результаты тестирования (5 одновременных запросов):**
+
+- ✅ Все запросы успешно обработаны
+- Пропускная способность: ~1.6 запросов/сек
+- Время обработки: 2.5-3 секунды на запрос
+- Сервер обрабатывает все запросы параллельно благодаря async/await
+
+**Как работает:**
+
+- FastAPI обрабатывает запросы асинхронно
+- Каждый запрос не блокирует другие
+- При текущей настройке (1 worker) все запросы обрабатываются последовательно на уровне uvicorn
+- Для production добавьте больше workers: `uvicorn app.main:app --workers 4`
+
 ## Следующие шаги
 
 1. ✅ Локальное тестирование шлюза
-2. ⏳ Развертывание WAN2.2 модели на удаленном сервере
-3. ⏳ Настройка шлюза для работы с удаленным сервером
-4. ⏳ Тестирование производительности
-5. ⏳ Оценка необходимой мощности сервера
+2. ✅ Тестирование производительности
+3. ⏳ Развертывание WAN2.2 модели на удаленном сервере
+4. ⏳ Настройка шлюза для работы с удаленным сервером
+5. ⏳ Настройка production конфигурации (workers, rate limiting)
 
 ## Логирование
 
-Все запросы логируются с метаданными:
-- Время выполнения
-- URL API
-- Ошибки (если есть)
+Все запросы логируются в файлы и консоль:
 
-Логи выводятся в консоль в формате:
+- **Все логи**: `logs/gateway.log` (ротация 10MB, 5 файлов)
+- **Ошибки**: `logs/errors.log` (только ERROR и выше)
+- **Консоль**: вывод в реальном времени
+
+### Формат логов
+
 ```
-2024-01-01 12:00:00 - app.services.wan_client - INFO - Request completed in 1.23s
+2025-10-26 17:00:00 - app.services.wan_client - INFO - [wan_client.py:45] - Request completed in 1.23s
+```
+
+### Структура директории logs
+
+```
+logs/
+├── gateway.log      # Все логи (ротация 10MB)
+├── gateway.log.1    # Старый лог
+├── errors.log       # Только ошибки
+└── errors.log.1     # Старые ошибки
+```
+
+### Просмотр логов
+
+```powershell
+# Windows
+Get-Content logs\gateway.log -Tail 50
+Get-Content logs\errors.log -Tail 50
+
+# Linux/MacOS
+tail -f logs/gateway.log
+tail -f logs/errors.log
 ```

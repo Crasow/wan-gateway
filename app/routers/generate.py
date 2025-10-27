@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
-from app.services.wan_client import generate_text, generate_image, generate_video
-import logging
 from typing import Optional
 
-logger = logging.getLogger(__name__)
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+
+from app.logger import logger
+from app.services.wan_client import generate_image, generate_text, generate_video
 
 router = APIRouter(prefix="/api", tags=["WAN Generation"])
 
