@@ -11,7 +11,9 @@ DEFAULT_TIMEOUT = int(os.getenv("WAN_TIMEOUT", "300"))  # 5 минут
 
 # Настройки для генерации видео через локальный скрипт
 # Путь к скрипту generate.py (относительно текущей директории или абсолютный)
-DEFAULT_GENERATE_SCRIPT_PATH = os.getenv("GENERATE_SCRIPT_PATH", "../generate.py")
+DEFAULT_GENERATE_SCRIPT_PATH = os.getenv(
+    "GENERATE_SCRIPT_PATH", "../Wan2.2/generate.py"
+)
 # Путь к директории с чекпоинтами
 DEFAULT_CKPT_DIR = os.getenv("CKPT_DIR", "./Wan2.2-TI2V-5B")
 # Размер видео по умолчанию

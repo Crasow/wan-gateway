@@ -1,5 +1,6 @@
 import asyncio
 import os
+import sys
 import time
 from typing import Any, Dict, Optional
 
@@ -221,6 +222,7 @@ async def generate_video(
     try:
         # Формируем команду для запуска скрипта
         cmd = [
+            sys.executable,
             "python",
             script_path,
             "--task", task,
@@ -229,7 +231,7 @@ async def generate_video(
             "--offload_model", "True",
             "--convert_model_dtype",
             "--t5_cpu",
-            "--prompt", prompt
+            "--prompt",prompt,
         ]
         
         logger.info(f"Выполнение команды: {' '.join(cmd)}")
