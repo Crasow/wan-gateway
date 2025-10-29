@@ -1,11 +1,12 @@
 """
 Конфигурация для WAN2.2 API Gateway
 """
+
 import os
 from typing import Optional
 
 # Настройки по умолчанию
-DEFAULT_WAN_API_URL = os.getenv("WAN_API_URL", "http://127.0.0.1:8001")
+DEFAULT_WAN_API_URL = os.getenv("WAN_API_URL", "http://127.0.0.1:8000")
 DEFAULT_TIMEOUT = int(os.getenv("WAN_TIMEOUT", "300"))  # 5 минут
 
 # Настройки для генерации видео через локальный скрипт
