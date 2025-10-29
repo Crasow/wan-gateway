@@ -13,6 +13,7 @@ from app.config import (
     get_timeout,
     get_video_size,
     get_wan_api_url,
+    get_wan_python_path,
 )
 from app.logger import logger
 
@@ -204,6 +205,7 @@ async def generate_video(
     task = task or get_ti2v_task()
     ckpt_dir = ckpt_dir or get_ckpt_dir()
     script_path = generate_script_path or get_generate_script_path()
+    wan_python_path = get_wan_python_path() 
     timeout = timeout or get_timeout()
     
     # Проверяем существование скрипта
@@ -222,8 +224,7 @@ async def generate_video(
     try:
         # Формируем команду для запуска скрипта
         cmd = [
-            sys.executable,
-            "python",
+            wan_python_path,
             script_path,
             "--task", task,
             "--size", size,

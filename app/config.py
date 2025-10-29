@@ -8,6 +8,7 @@ from typing import Optional
 # Настройки по умолчанию
 DEFAULT_WAN_API_URL = os.getenv("WAN_API_URL", "http://127.0.0.1:8000")
 DEFAULT_TIMEOUT = int(os.getenv("WAN_TIMEOUT", "300"))  # 5 минут
+DEFAULT_WAN_PYTHON_PATH = os.getenv("WAN_PYTHON_PATH", "/venv/main/bin/python")
 
 # Настройки для генерации видео через локальный скрипт
 # Путь к скрипту generate.py (относительно текущей директории или абсолютный)
@@ -35,6 +36,11 @@ def get_timeout(override: Optional[int] = None) -> int:
 def get_generate_script_path() -> str:
     """Возвращает путь к скрипту generate.py"""
     return DEFAULT_GENERATE_SCRIPT_PATH
+
+
+def get_wan_python_path() -> str:
+    """Возвращает путь к python со всеми зависимостями wan"""
+    return DEFAULT_WAN_PYTHON_PATH
 
 
 def get_ckpt_dir() -> str:
